@@ -33,6 +33,7 @@ except ImportError:
 # Globals
 
 SPREADSHEET_NAME = "Brian Drummond Staff"
+#SPREADSHEET_NAME = "Test Data Sheet"
 WORKSHEET_NAME = "Test"
 #WORKSHEET_NAME = "Full Staff Listing"
 WORKSHEET_ROW_HEADER_INDEX = 4
@@ -120,15 +121,13 @@ def main():
 
             #https://developers.google.com/gmail/api/guides/drafts
 
-            message_text = "Hello " + record['First Name'] + "!\n\n" + "Here is your WorkDay information:\n\n" + \
-                "Hire date: " + record['Hire Date'] + \
-                "Employee ID: " + record['Employee ID']
+            #message_text = "Hello " + record['First Name'] + "!\n\n" + "Here is your WorkDay information:\n\n" + "Hire date: " + record['Hire Date'] + "Employee ID: " + record['Employee ID']
 
-            message_text = "Status: " + project['Status']
+            message_text = "Hello " + record['First Name'] + "!\n\nHere is your WorkDay information:\n\nHire date: " + record['Hire Date'] + "\n\nEmployee ID: " +  str(record['Employee ID'])
 
-            user_id = project['Email']
+            user_id = record['Email']
             sender = "bsdrummond@gmail.com"
-            to = project['Email']
+            to = record['Email']
             subject = "googleEmailTest"
 
             message_body = CreateMessage(sender, to, subject, message_text)
