@@ -1,9 +1,5 @@
 __author__ = 'brian'
 
-# IMPORTANT NOTE: This program HAS to be run as root, otherwise it will get an SSL Error. Therefore,
-#                 I run it from the command line.
-#
-
 import httplib2
 import os
 import re
@@ -34,17 +30,29 @@ try:
 except ImportError:
     flags = None
 
+from gmaillib import CreateMessage
+from gmaillib import CreateDraft
+from gmaillib import SendMessage
+
+# Gmail scopes: https://developers.google.com/gmail/api/auth/scopes
+# Hint: Delete the ~/.credentials/*.json file if you change the scope, then the user will be asked again and the
+# credentials file re-created with the new scope(s)
 #SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly'
-SCOPES = 'https://www.googleapis.com/auth/drive.file https://spreadsheets.google.com/feeds https://docs.google.com/feeds'
+SCOPES = 'https://www.googleapis.com/auth/drive.file \
+         https://spreadsheets.google.com/feeds \
+         https://docs.google.com/feeds \
+         https://www.googleapis.com/auth/gmail.send \
+         https://www.googleapis.com/auth/gmail.compose'
 
 # bsdrummond@gmail.com
 #CLIENT_SECRET_FILE = 'client_secret_981612606649-03ptve9ed27jj4h6k1ume8beqg6lm1bs.apps.googleusercontent.com.json'
 
 # bdrummond@linkedin.com
-CLIENT_SECRET_FILE = 'client_secret_302402880436-pqb9hvba1459g8mghnddqoklj5uq48pn.apps.googleusercontent.com.json'
+# CLIENT_SECRET_FILE = 'client_secret_302402880436-pqb9hvba1459g8mghnddqoklj5uq48pn.apps.googleusercontent.com.json'
+CLIENT_SECRET_FILE = 'client_secret_981612606649-quhvrk6rfnofct1h098h12nceoq10pt2.apps.googleusercontent.com.json'
 
 #APPLICATION_NAME = 'Drive API Quickstart'
-APPLICATION_NAME = 'Google Sheets API Tester'
+APPLICATION_NAME = 'Google Gmail API Tester'
 
 
 def get_credentials():
@@ -61,7 +69,7 @@ def get_credentials():
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
     credential_path = os.path.join(credential_dir,
-                                   'googleSheetsAPITest.json')
+                                   'googleGMailAPITest.json')
 
     store = oauth2client.file.Storage(credential_path)
     credentials = store.get()
@@ -84,6 +92,7 @@ def main():
 
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
+    service = discovery.build('gmail', 'v1', http=http)
 
     # Part 2: create a new spreadsheet
     gc = gspread.authorize(credentials)
@@ -104,6 +113,22 @@ def main():
 
     for project in records:
         print "Entered By:", project['Email']
+
+        #https://developers.google.com/gmail/api/guides/drafts
+        message_text = "Status: " + project['Status']
+        user_id = project['Email']
+        sender = "bsdrummond@gmail.com"
+        to = project['Email']
+        subject = "googleEmailTest"
+
+        message_body = CreateMessage(sender, to, subject, message_text)
+        #draft = CreateDraft(service, user_id, message_body)
+
+        # https://developers.google.com/gmail/api/guides/sending
+        SendMessage(service, sender, message_body)
+
+        True
+
     True
 
 if __name__ == '__main__':
