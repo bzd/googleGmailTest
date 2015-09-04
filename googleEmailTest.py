@@ -29,6 +29,8 @@ try:
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 except ImportError:
     flags = None
+
+# ----------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------
 # Globals
 
@@ -37,6 +39,8 @@ WORKSHEET_NAME = "Test"
 #WORKSHEET_NAME = "Full Staff Listing"
 WORKSHEET_ROW_HEADER_INDEX = 4
 
+EMAIL_FROM = "bsdrummond@gmail.com"
+# ----------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------
 
 from gmaillib import CreateMessage
@@ -110,6 +114,34 @@ def main():
     # TEST:
     # Open & access a spreadsheet/worksheet containing email addresses
 
+    # try:
+    #     ss = gc.open("foo")
+    # except Exception as e:
+    #     print e
+
+    # try:
+    #     ss = gc.open("foo")
+    # except SpreadsheetNotFound as e:
+    #     print e
+    #     raise e
+
+    NONEXISTANT_SPREADSHEET = "foo"
+    try:
+        ss = gc.open(NONEXISTANT_SPREADSHEET)
+    except SpreadsheetNotFound as exc:
+        print "Spreadsheet: " + NONEXISTANT_SPREADSHEET + "not FOUND!, " + exc
+
+
+    try:
+	    ss = gc.open("foo")
+    except Exception as exc:
+        #this is how you get the type
+        excType = exc.__class__.__name__
+
+        #here we are printing out information about the Exception
+        print 'exception type', excType
+        print 'exception msg', str(exc)
+
     try:
         ss = gc.open(SPREADSHEET_NAME)
         ws = ss.worksheet(WORKSHEET_NAME)
@@ -122,8 +154,7 @@ def main():
 
             message_text = "Hello " + record['First Name'] + "!\n\nHere is your WorkDay information:\n\nHire date: " + record['Hire Date'] + "\n\nEmployee ID: " +  str(record['Employee ID'])
 
-            user_id = record['Email']
-            sender  = "bsdrummond@gmail.com"
+            sender  = EMAIL_FROM
             to      = record['Email']
             subject = "googleEmailTest"
 
