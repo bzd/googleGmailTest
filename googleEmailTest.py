@@ -29,6 +29,15 @@ try:
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 except ImportError:
     flags = None
+# ----------------------------------------------------------------------------------------------------------------
+# Globals
+
+SPREADSHEET_NAME = "Brian Drummond Staff"
+WORKSHEET_NAME = "Test"
+#WORKSHEET_NAME = "Full Staff Listing"
+WORKSHEET_ROW_HEADER_INDEX = 4
+
+# ----------------------------------------------------------------------------------------------------------------
 
 from gmaillib import CreateMessage
 from gmaillib import CreateDraft
@@ -100,34 +109,39 @@ def main():
 
     # TEST:
     # Open & access a spreadsheet/worksheet containing email addresses
-    sheetName = "Test Data Sheet"
-    worksheetName = "email test"
+
     try:
-        ss = gc.open(sheetName)
-        ws = ss.worksheet(worksheetName)
+        ss = gc.open(SPREADSHEET_NAME)
+        ws = ss.worksheet(WORKSHEET_NAME)
+
+        records = ws.get_all_records(empty2zero=False, head=WORKSHEET_ROW_HEADER_INDEX)
+
+        for record in records:
+
+            #https://developers.google.com/gmail/api/guides/drafts
+
+            message_text = "Hello " + record['First Name'] + "!\n\n" + "Here is your WorkDay information:\n\n" + \
+                "Hire date: " + record['Hire Date'] + \
+                "Employee ID: " + record['Employee ID']
+
+            message_text = "Status: " + project['Status']
+
+            user_id = project['Email']
+            sender = "bsdrummond@gmail.com"
+            to = project['Email']
+            subject = "googleEmailTest"
+
+            message_body = CreateMessage(sender, to, subject, message_text)
+            #draft = CreateDraft(service, user_id, message_body)
+
+            # https://developers.google.com/gmail/api/guides/sending
+            SendMessage(service, sender, message_body)
+
+            True
+
     except:
-        print "Could not Open" + sheetName
+        print "Could not Open: " + SPREADSHEET_NAME
 
-    rowheader_of_projects_table = 3
-    records = ws.get_all_records(empty2zero=False, head=rowheader_of_projects_table)
-
-    for project in records:
-        print "Entered By:", project['Email']
-
-        #https://developers.google.com/gmail/api/guides/drafts
-        message_text = "Status: " + project['Status']
-        user_id = project['Email']
-        sender = "bsdrummond@gmail.com"
-        to = project['Email']
-        subject = "googleEmailTest"
-
-        message_body = CreateMessage(sender, to, subject, message_text)
-        #draft = CreateDraft(service, user_id, message_body)
-
-        # https://developers.google.com/gmail/api/guides/sending
-        SendMessage(service, sender, message_body)
-
-        True
 
     True
 
