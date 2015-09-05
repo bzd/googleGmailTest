@@ -98,18 +98,23 @@ def get_credentials():
     return credentials
 
 def main():
-    """Shows basic usage of the Google Drive API.
-
-    Creates a Google Drive API service object and outputs the names and IDs
-    for up to 10 files.
+    """Shows basic useage for:
+        1) Creating a certificate of authority to use the Google APIs
+        2) Using the 3rd party gspread library to open and read from a Google Sheet
+        3) Using the gmail service to send email.
     """
 
+    # ----------------------------------------------------------------------------------------------------
+    # Get credentials (optionally create) for authorized access to use Google Drive, Google gmail services
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
+
+    # Gain access to the Google API services that we will be using
     service = discovery.build('gmail', 'v1', http=http)
 
-    # Part 2: create a new spreadsheet
+    # Prepare to use gspread 3rd party library to use Google Sheets
     gc = gspread.authorize(credentials)
+    # ----------------------------------------------------------------------------------------------------
 
     # TEST:
     # Open & access a spreadsheet/worksheet containing email addresses
@@ -126,7 +131,7 @@ def main():
 
             for record in records:
 
-                #https://developers.google.com/gmail/api/guides/drafts
+                # See: https://developers.google.com/gmail/api/guides/drafts
 
                 message_text = "Hello " + record['First Name'] + "!\n\nHere is your WorkDay information:\n\nHire date: " + record['Hire Date'] + "\n\nEmployee ID: " +  str(record['Employee ID'])
 
