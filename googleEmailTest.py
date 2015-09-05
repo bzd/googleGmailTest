@@ -23,6 +23,7 @@ from oauth2client import client
 from oauth2client import tools
 
 import gspread
+from gspread.exceptions import SpreadsheetNotFound
 
 try:
     import argparse
@@ -110,58 +111,46 @@ def main():
     # Part 2: create a new spreadsheet
     gc = gspread.authorize(credentials)
 
-
     # TEST:
     # Open & access a spreadsheet/worksheet containing email addresses
 
-    # try:
-    #     ss = gc.open("foo")
-    # except Exception as e:
-    #     print e
-
-    # try:
-    #     ss = gc.open("foo")
-    # except SpreadsheetNotFound as e:
-    #     print e
-    #     raise e
-
-    NONEXISTANT_SPREADSHEET = "foo"
     try:
-        ss = gc.open(NONEXISTANT_SPREADSHEET)
-    except SpreadsheetNotFound as exc:
-        print "Spreadsheet: " + NONEXISTANT_SPREADSHEET + "not FOUND!, " + exc
+        ss_name = SPREADSHEET_NAME
+        ss = gc.open(ss_name)
+
+        try:
+            ws_name = WORKSHEET_NAME
+            ws = ss.worksheet(ws_name)
+
+            records = ws.get_all_records(empty2zero=False, head=WORKSHEET_ROW_HEADER_INDEX)
+
+            for record in records:
+
+                #https://developers.google.com/gmail/api/guides/drafts
+
+                message_text = "Hello " + record['First Name'] + "!\n\nHere is your WorkDay information:\n\nHire date: " + record['Hire Date'] + "\n\nEmployee ID: " +  str(record['Employee ID'])
+
+                sender  = EMAIL_FROM
+                to      = record['Email']
+                subject = "googleEmailTest"
+
+                message_body = CreateMessage(sender, to, subject, message_text)
+
+                # https://developers.google.com/gmail/api/guides/sending
+                SendMessage(service, sender, message_body)
+
+        except gspread.exceptions.WorksheetNotFound as exc:
+            excType = exc.__class__.__name__
+            print "[Exception: " + excType + "] Worksheet \"" + ws_name + "\" not FOUND!"
+            print 'exception msg: "', str(exc) + '"'
 
 
-    try:
-	    ss = gc.open("foo")
-    except Exception as exc:
-        #this is how you get the type
+    except gspread.exceptions.SpreadsheetNotFound as exc:
         excType = exc.__class__.__name__
+        print "[Exception: " + excType + "] Spreadsheet \"" + ss_name + "\" not FOUND!"
+        print 'exception msg: "', str(exc) + '"'
 
-        #here we are printing out information about the Exception
-        print 'exception type', excType
-        print 'exception msg', str(exc)
 
-    try:
-        ss = gc.open(SPREADSHEET_NAME)
-        ws = ss.worksheet(WORKSHEET_NAME)
-
-        records = ws.get_all_records(empty2zero=False, head=WORKSHEET_ROW_HEADER_INDEX)
-
-        for record in records:
-
-            #https://developers.google.com/gmail/api/guides/drafts
-
-            message_text = "Hello " + record['First Name'] + "!\n\nHere is your WorkDay information:\n\nHire date: " + record['Hire Date'] + "\n\nEmployee ID: " +  str(record['Employee ID'])
-
-            sender  = EMAIL_FROM
-            to      = record['Email']
-            subject = "googleEmailTest"
-
-            message_body = CreateMessage(sender, to, subject, message_text)
-
-            # https://developers.google.com/gmail/api/guides/sending
-            SendMessage(service, sender, message_body)
 
     except:
         print "Could not Open: " + SPREADSHEET_NAME
